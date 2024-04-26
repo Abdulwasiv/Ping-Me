@@ -5,7 +5,6 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-    },
-    sitemap: `https://askyp.vercel.app/sitemap.xml`,
+    }
   }
 }
