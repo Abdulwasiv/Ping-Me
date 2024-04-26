@@ -14,7 +14,7 @@ export const metadata = {
   },
   description: siteConfig.description,
   keywords: [
-    "AskYP",
+    "ping me",
     "AI chatbot",
     "local business",
     "Yelp integration",
@@ -28,13 +28,6 @@ export const metadata = {
     "chatbot recommendations",
     "best local businesses"
   ],
-  authors: [
-    {
-      name: "jaleelb",
-      url: "https://jaleelbennett.com",
-    },
-  ],
-  creator: "jaleelb",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "white" },
     { media: "(prefers-color-scheme: dark)", color: "black" },
@@ -54,13 +47,6 @@ export const metadata = {
         alt: siteConfig.name,
       },
     ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: siteConfig.name,
-    description: siteConfig.description,
-    images: [`${siteConfig.url}/web-shot.png`],
-    creator: "@jal_eelll",
   }
 }
 
