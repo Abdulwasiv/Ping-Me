@@ -10,7 +10,6 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import va from '@vercel/analytics';
 import { useToast } from "@/components/ui/use-toast"
-import LoginPage from "./login"
 
 
 const exploreOptions = [
@@ -112,9 +111,9 @@ export default function Home() {
                       >
                         <div className="flex lg:flex-col lg:items-center gap-4">
                           {option.icon}
-                          <h2 className="lg:text-center text-lg text-primary font-semibold">{option.title}</h2>
+                         <h2 className="color-white lg:text-center text-lg text-primary font-semibold " >{option.title}</h2>
                         </div>
-                        <p className="text-center text-secondary hidden lg:block">{option.description}</p>
+                        <p className="color-white text-center text-secondary hidden lg:block">{option.description}</p>
                       </div> 
                     ))
                   }
@@ -230,3 +229,4 @@ export default function Home() {
     </>
   );
 }
+

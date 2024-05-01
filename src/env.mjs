@@ -8,7 +8,7 @@ export const env = createEnv({
    */
   server: {
     // DATABASE_URL: z.string().url(),
-    OPENAI_API_KEY: z.string().min(1),
+    GEMINI_API_KEY: z.string().min(1),
     YELP_CLIENT_ID: z.string().min(1),
     YELP_API_KEY: z.string().min(1),
     YELP_API_ENDPOINT: z.string().url(),
@@ -31,7 +31,7 @@ export const env = createEnv({
    */
   runtimeEnv: {
     // DATABASE_URL: process.env.DATABASE_URL,
-    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+    GEMINI_API_KEY: process.env.GEMINI_API_KEY,
     YELP_CLIENT_ID: process.env.YELP_CLIENT_ID,
     YELP_API_KEY: process.env.YELP_API_KEY,
     YELP_API_ENDPOINT: process.env.YELP_API_ENDPOINT,

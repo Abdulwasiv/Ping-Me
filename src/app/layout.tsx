@@ -60,7 +60,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <div className="flex h-screen flex-col overflow-hidden">
+        <div className="flex h-screen flex-col overflow-hidden" >
           <Header/>
           {children}
           <Toaster />

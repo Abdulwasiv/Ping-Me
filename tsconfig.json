@@ -40,7 +40,7 @@
     "**/*.cjs",
     "**/*.mjs",
     ".next/types/**/*.ts"
-  ],
+, "src/app/pages/auth/login.js", "src/app/pages/auth/register.tsx"  ],
   "exclude": [
     "node_modules"
   ]
