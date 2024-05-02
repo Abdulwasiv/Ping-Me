@@ -5,6 +5,7 @@ import { Ratelimit } from '@upstash/ratelimit';
 import { kv } from '@vercel/kv';
 import { type location } from '@/lib/types';
 import { getGeoLocation } from '@/lib/utils';
+import { functions, runChatFunctions } from '@/app/chat-functions';
 
 const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
 
@@ -41,16 +42,31 @@ export async function POST(req: Request) {
     const { messages } = await req.json() as ChatRequest;
 
     
+    const latitude= 34.0549
+    const longitude=118.2426
+
+    const yelpData = await runChatFunctions('fetch_restaurants', { latitude, longitude });
+    if (!yelpData) {
+        throw new Error('Failed to fetch Yelp data.');
+    }
+    
     const prompt = messages.map(message => ({
         role: message.role === 'user' ? 'user' : 'model',
-        parts: [{ text: message.content }],
+     //   parts: [{ text: message.content }],
+        parts: [{ text: JSON.stringify(yelpData) }]
     }));
 
+//     prompt.push({
+//                 role: 'model',
+//                 , // Pass Yelp data as part of the prompt
+//             });
+//   prompt.push({
+//                 role: 'model',
+//                 parts: [{ text: '' }], // Empty text to signify waiting for user response
+//             });
     const response = await genAI.getGenerativeModel({ model: 'gemini-pro' }).generateContentStream({ contents: prompt });
 
     const stream = GoogleGenerativeAIStream(response);
 
     return new StreamingTextResponse(stream);
 }
-
-
