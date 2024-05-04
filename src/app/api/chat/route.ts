@@ -93,16 +93,12 @@ const params: location = locationResult;
         throw new Error('Failed to fetch Yelp data.');
     }
     
+    
     const prompt = messages.map(message => ({
         role: message.role === 'user' ? 'user' : 'model',
-        parts: [{ text: JSON.stringify(yelpData) }]
+        parts: [{ text: yelpData ? JSON.stringify(yelpData) : message.content }],
     }));
     
-    const prompt2 = messages.map(message => ({
-        role: message.role === 'user' ? 'user' : 'model',
-        parts: [{ text: message.content }],
-    }));
-
 
     const response = await genAI.getGenerativeModel({ model: 'gemini-pro' }).generateContentStream({ contents: prompt });
 
@@ -110,3 +106,5 @@ const params: location = locationResult;
 
     return new StreamingTextResponse(stream);
 }
+
+
