@@ -6,6 +6,7 @@ import { kv } from '@vercel/kv';
 import { type location } from '@/lib/types';
 import { getGeoLocation } from '@/lib/utils';
 import { functions, runChatFunctions } from '@/app/chat-functions';
+import  prompts  from '@/components/prompt';
 
 const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
 
@@ -15,6 +16,8 @@ type ChatRequest = {
         content: string;
     }>;
 };
+
+
 
 export async function POST(req: Request) {
     const ipAddress = req.headers.get("x-forwarded-for");
@@ -40,30 +43,67 @@ export async function POST(req: Request) {
     }
 
     const { messages } = await req.json() as ChatRequest;
+  
+ 
+    const extractFunctionName = (userPrompt: string): string | undefined => {
+    const flattenedPrompts = prompts.flatMap(prompt => prompt.prompts);
+    const index = flattenedPrompts.findIndex(prompt => prompt.toLowerCase() === userPrompt.toLowerCase());
+    if (index !== -1) {
+        return flattenedPrompts[index];
+    }
+    return undefined;
+};
 
+
+const functionMapping: Record<string, string> = {};
+
+prompts.forEach(prompt => {
+    prompt.prompts.forEach(userPrompt => {
+        const functionName = extractFunctionName(userPrompt);
+        if (functionName) {
+            functionMapping[userPrompt] = prompt.name;
+        }
+    });
+});
+const user_pro = messages.find(message => message.role === 'user')?.content;
+
+console.log('Extracted function name:', user_pro);
+
+// Example usage:
+//const userPrompt = "Locate businesses near me that specialize in eco-friendly products";
+
+const functionName = extractFunctionName(user_pro);
+const category = functionMapping[user_pro];
+console.log('Extracted category name:', category);
+
+let locationResult = await getGeoLocation(ipAddress);
+const params: location = locationResult;
+
+
+// const latitude= 34.0549
+// const longitude=118.2426
     
-    const latitude= 34.0549
-    const longitude=118.2426
 
-    const yelpData = await runChatFunctions('fetch_restaurants', { latitude, longitude });
+     if (!functionName) {
+        throw new Error('Function name not provided in user message.');
+    }
+
+    const yelpData = await runChatFunctions(category, params);
     if (!yelpData) {
         throw new Error('Failed to fetch Yelp data.');
     }
     
     const prompt = messages.map(message => ({
         role: message.role === 'user' ? 'user' : 'model',
-     //   parts: [{ text: message.content }],
         parts: [{ text: JSON.stringify(yelpData) }]
     }));
+    
+    const prompt2 = messages.map(message => ({
+        role: message.role === 'user' ? 'user' : 'model',
+        parts: [{ text: message.content }],
+    }));
 
-//     prompt.push({
-//                 role: 'model',
-//                 , // Pass Yelp data as part of the prompt
-//             });
-//   prompt.push({
-//                 role: 'model',
-//                 parts: [{ text: '' }], // Empty text to signify waiting for user response
-//             });
+
     const response = await genAI.getGenerativeModel({ model: 'gemini-pro' }).generateContentStream({ contents: prompt });
 
     const stream = GoogleGenerativeAIStream(response);
