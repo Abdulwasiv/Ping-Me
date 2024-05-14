@@ -4,7 +4,7 @@ import { z } from "zod";
 export const env = createEnv({
  
   server: {
-    GEMINI_API_KEY: z.string().min(1),
+    OPENAI_API_KEY: z.string().min(1),
     YELP_CLIENT_ID: z.string().min(1),
     YELP_API_KEY: z.string().min(1),
     YELP_API_ENDPOINT: z.string().url(),
@@ -15,7 +15,7 @@ export const env = createEnv({
     // NEXT_PUBLIC_CLIENTVAR: z.string().min(1),
   },
   runtimeEnv: {
-    GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
     YELP_CLIENT_ID: process.env.YELP_CLIENT_ID,
     YELP_API_KEY: process.env.YELP_API_KEY,
     YELP_API_ENDPOINT: process.env.YELP_API_ENDPOINT,

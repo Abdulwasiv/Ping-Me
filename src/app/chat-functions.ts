@@ -216,25 +216,25 @@ const fetchWithYelpConfig = async (endpoint: string, params: YelpConfigParams) =
   }
 };
 
-export const fetch_businesses = async (latitude:number, longitude:number, limit = 5) => 
+export const fetch_businesses = async (latitude:number, longitude:number, limit = 9) => 
   fetchWithYelpConfig(YELP_BUSINESS_ENDPOINT, { latitude, longitude, limit, categories: 'businesses' });
 
-export const fetch_restaurants = async (latitude:number, longitude:number, limit = 5) => 
+export const fetch_restaurants = async (latitude:number, longitude:number, limit = 9) => 
   fetchWithYelpConfig(YELP_BUSINESS_ENDPOINT, { latitude, longitude, limit, categories: 'restaurants' });
 
-export const fetch_local_services = async (latitude:number, longitude:number, limit = 5) => 
+export const fetch_local_services = async (latitude:number, longitude:number, limit = 9) => 
   fetchWithYelpConfig(YELP_BUSINESS_ENDPOINT, { latitude, longitude, limit, categories: 'localservices' });
 
-export const fetch_entertainment = async (latitude:number, longitude:number, limit = 5) => 
+export const fetch_entertainment = async (latitude:number, longitude:number, limit = 9) => 
   fetchWithYelpConfig(YELP_BUSINESS_ENDPOINT, { latitude, longitude, limit, categories: 'arts,nightlife' });
 
-export const fetch_health_wellness = async (latitude:number, longitude:number, limit = 5) => 
+export const fetch_health_wellness = async (latitude:number, longitude:number, limit = 9) => 
   fetchWithYelpConfig(YELP_BUSINESS_ENDPOINT, { latitude, longitude, limit, categories: 'health,active' });
 
-export const fetch_shopping_retail = async (latitude:number, longitude:number, limit = 5) => 
+export const fetch_shopping_retail = async (latitude:number, longitude:number, limit = 9) => 
   fetchWithYelpConfig(YELP_BUSINESS_ENDPOINT, { latitude, longitude, limit, categories: 'shopping' });
 
-export const fetch_miscellaneous = async (latitude:number, longitude:number, limit = 5) => 
+export const fetch_miscellaneous = async (latitude:number, longitude:number, limit = 9) => 
   fetchWithYelpConfig(YELP_BUSINESS_ENDPOINT, { latitude, longitude, limit });
 
 
@@ -273,14 +273,6 @@ export const runChatFunctions = async (
             return await fetch_miscellaneous(latitude, longitude);
         default:
             return null;
-    }
 }
 
-
-
-
-
-
-
-
-
+}
