@@ -69,7 +69,7 @@ export const functions: {
         },
         limit: {
           type: "number",
-          description: "The number of businesses to return. Defaults to 5.",
+          description: "The number of businesses to return. Defaults to 100.",
         },
       },
       required: ["location"],
@@ -87,7 +87,7 @@ export const functions: {
         },
         limit: {
           type: "number",
-          description: "The number of restaurants to return. Defaults to 5.",
+          description: "The number of restaurants to return. Defaults to 100.",
         },
       },
       required: ["location"],
@@ -105,7 +105,7 @@ export const functions: {
         },
         limit: {
           type: "number",
-          description: "The number of local services to return. Defaults to 5.",
+          description: "The number of local services to return. Defaults to 100.",
         },
       },
       required: ["location"],
@@ -123,7 +123,7 @@ export const functions: {
         },
         limit: {
           type: "number",
-          description: "The number of entertainment options to return. Defaults to 5.",
+          description: "The number of entertainment options to return. Defaults to 100.",
         },
       },
       required: ["location"],
@@ -141,7 +141,7 @@ export const functions: {
         },
         limit: {
           type: "number",
-          description: "The number of health and wellness centers to return. Defaults to 5.",
+          description: "The number of health and wellness centers to return. Defaults to 100.",
         },
       },
       required: ["location"],
@@ -159,7 +159,7 @@ export const functions: {
         },
         limit: {
           type: "number",
-          description: "The number of shopping and retail stores to return. Defaults to 5.",
+          description: "The number of shopping and retail stores to return. Defaults to 100.",
         },
       },
       required: ["location"],
@@ -177,7 +177,7 @@ export const functions: {
         },
         limit: {
           type: "number",
-          description: "The number of results to return. Defaults to 5.",
+          description: "The number of results to return. Defaults to 100.",
         },
       },
       required: ["location"],
@@ -199,7 +199,6 @@ const fetchWithYelpConfig = async (endpoint: string, params: YelpConfigParams) =
   });
 
   try {
-
     const response = await fetch(url.toString(), {
       method: 'GET',
       headers: {
