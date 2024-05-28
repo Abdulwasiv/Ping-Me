@@ -1,3 +1,5 @@
+// GOOGLE GEN AI
+
 // import { GoogleGenerativeAI,  } from '@google/generative-ai';
 // import {GoogleGenerativeAIStream, StreamingTextResponse} from 'ai'
 
@@ -269,348 +271,390 @@
 
 //     }
 // }
+
+
+
+/////////////////////working stufff 2
+
+
+
+
 import { 
-  type ChatCompletionRequestMessage, 
-  Configuration, 
-  OpenAIApi,
-  type CreateChatCompletionResponse, 
-  type ChatCompletionResponseMessage
-} from 'openai-edge';
-
-import { OpenAIStream, StreamingTextResponse } from 'ai';
-import { env } from '@/env.mjs';
-import { functions, runChatFunctions } from '@/app/chat-functions';
-import { type location } from '@/lib/types';
-import { getGeoLocation } from '@/lib/utils';
-import { Ratelimit } from '@upstash/ratelimit';
-import { kv } from '@vercel/kv';
-
-const openAIConfig = new Configuration({
-apiKey: env.OPENAI_API_KEY,
-});
-
-const openai = new OpenAIApi(openAIConfig);
-
-export const runtime = 'edge';
-
-type chatRequest = {
-  messages: ChatCompletionRequestMessage[];
-};
-
-export async function POST(req: Request) {
-  const ipAddress = req.headers.get("x-forwarded-for");
-
-  if (process.env.NODE_ENV !== "development" &&
-      process.env.KV_REST_API_URL &&
-      process.env.KV_REST_API_TOKEN) {
-
-      const ratelimit = new Ratelimit({
-        redis: kv,
-        limiter: Ratelimit.slidingWindow(20, "1 d"),
-      });
-
-      const { success, limit, reset, remaining } = await ratelimit.limit(
-        `askyp_ratelimit_${ipAddress}`,
-      );
-
-      if (!success) {
-        return new Response("You have reached your request limit for the day.", {
-          status: 429,
-          headers: {
-            "X-RateLimit-Limit": limit.toString(),
-            "X-RateLimit-Remaining": remaining.toString(),
-            "X-RateLimit-Reset": reset.toString(),
-          },
+    type ChatCompletionRequestMessage, 
+    Configuration, 
+    OpenAIApi,
+    type CreateChatCompletionResponse, 
+    type ChatCompletionResponseMessage
+  } from 'openai-edge';
+  
+  import { OpenAIStream, StreamingTextResponse } from 'ai';
+  import { env } from '@/env.mjs';
+  import { functions, runChatFunctions } from '@/app/chat-functions';
+  import { type location } from '@/lib/types';
+  import { getGeoLocation } from '@/lib/utils';
+  import { Ratelimit } from '@upstash/ratelimit';
+  import { kv } from '@vercel/kv';
+  
+  const openAIConfig = new Configuration({
+  apiKey: env.OPENAI_API_KEY,
+  });
+  
+  const openai = new OpenAIApi(openAIConfig);
+  
+  export const runtime = 'edge';
+  
+  type chatRequest = {
+    messages: ChatCompletionRequestMessage[];
+  };
+  
+  export async function POST(req: Request) {
+    const ipAddress = req.headers.get("x-forwarded-for");
+  
+    if (process.env.NODE_ENV !== "development" &&
+        process.env.KV_REST_API_URL &&
+        process.env.KV_REST_API_TOKEN) {
+  
+        const ratelimit = new Ratelimit({
+          redis: kv,
+          limiter: Ratelimit.slidingWindow(20, "1 d"),
         });
-      }
-  }
-
-//   const { messages } = await req.json() as chatRequest;
-
-//   const initialResponse = await openai.createChatCompletion({
-//       model: "gpt-3.5-turbo-0613",
-//       messages,
-//       functions,
-//       function_call: "auto",
-//   });
-
-//   const initialResponseJson: CreateChatCompletionResponse = await initialResponse.json() as CreateChatCompletionResponse;
-
-//   if (!initialResponseJson?.choices[0]?.message) {
-//       throw new Error("Missing message in response");
-//   }
-
-//   const initialResponseMessage: ChatCompletionResponseMessage = initialResponseJson?.choices[0]?.message;
-
-//   if (initialResponseMessage.function_call) {
-//       const { name, arguments: argsString } = initialResponseMessage.function_call;
-
-//       if (!name || !argsString) {
-//           throw new Error("Function name or arguments are missing");
-//       }
-
-//       if (!ipAddress) {
-//           throw new Error("Cannot determine IP address");
-//       }
-
-//       const locationResult = await getGeoLocation(ipAddress);
-
-//       if (!locationResult) {
-//           throw new Error("Cannot determine location for this IP");
-//       }
-
-//       const params: location = locationResult;
-
-//       if (typeof params.latitude !== 'number' || typeof params.longitude !== 'number') {
-//           throw new Error("Invalid latitude or longitude values");
-//       }
-
-//       const functionResponse = await runChatFunctions(name, params);
-//       console.log("FFFFFFFFFFFFFFFFF"+functionResponse)
-//       // Define a function to calculate the approximate token count
-//       const calculateTokenCount = (text: string) => {
-//           return Math.ceil(text.length / 4); // Rough estimate: 1 token ~ 4 characters
-//       };
-
-//       const maxTokensPerRequest = 4096 - 1000; // Leave room for response and system tokens
-
-//       let currentChunk = [];
-//       let currentTokenCount = 0;
-//       const chunks = [];
-
-//       for (const business of functionResponse) {
-//           const businessString = JSON.stringify(business);
-//           const businessTokenCount = calculateTokenCount(businessString);
-
-//           if (currentTokenCount + businessTokenCount > maxTokensPerRequest) {
-//               chunks.push(currentChunk);
-//               currentChunk = [business];
-//               currentTokenCount = businessTokenCount;
-//           } else {
-//               currentChunk.push(business);
-//               currentTokenCount += businessTokenCount;
-//           }
-//       }
-
-//       if (currentChunk.length > 0) {
-//           chunks.push(currentChunk);
-//       }
-
-//       const results = [];
-
-//       for (const chunk of chunks) {
-//           const chunkResponse = await openai.createChatCompletion({
-//               model: "gpt-3.5-turbo-0613",
-//               messages: [
-//                   ...messages,
-//                   initialResponseMessage,
-//                   {
-//                       role: "function",
-//                       name: name,
-//                       content: JSON.stringify({ businesses: chunk }),
-//                   },
-//               ],
-//           });
-
-//           const chunkJson = await chunkResponse.json();
-//           results.push(chunkJson.choices[0]?.message?.content ?? "");
-//       }
-
-//       console.log("RRRRRRRRRRRRRRRRRR"+results)
-//       //const finalResult = results;
-
-//       const finalchunk = await openai.createChatCompletion({
-//         model: "gpt-3.5-turbo-0613",
-//         messages: [
-//             ...messages,
-//             initialResponseMessage,
-//             {
-//                 role: "function",
-//                 name: name,
-//                 content: JSON.stringify(results),
-//             },
-//         ],
-//     });
-
-//     console.log("AAANS"+finalchunk)
+  
+        const { success, limit, reset, remaining } = await ratelimit.limit(
+          `askyp_ratelimit_${ipAddress}`,
+        );
+  
+        if (!success) {
+          return new Response("You have reached your request limit for the day.", {
+            status: 429,
+            headers: {
+              "X-RateLimit-Limit": limit.toString(),
+              "X-RateLimit-Remaining": remaining.toString(),
+              "X-RateLimit-Reset": reset.toString(),
+            },
+          });
+        }
+    }
+  
     
-//     const stream = new ReadableStream({
-//           async start(controller) {
-//               for (const word of finalchunk) {
-//                   controller.enqueue(new TextEncoder().encode(word + ' '));
-//                   const delay = Math.random() * (50 - 20) + 20;
-//                   await new Promise(resolve => setTimeout(resolve, delay));
-//               }
-//               controller.close();
-//           }
-//       });
-//       // //const chunkJson =  chunkResponse.json();
-//       // const stream =await OpenAIStream(finalchunk);
-//       // console.log(stream)
-//       return new StreamingTextResponse(stream);
-//   } else {
-//       const responseContent = initialResponseJson.choices[0]?.message?.content ?? "";
-//       const words = responseContent.split(' ');
-
-//       const stream = new ReadableStream({
-//           async start(controller) {
-//               for (const word of words) {
-//                   controller.enqueue(new TextEncoder().encode(word + ' '));
-//                   const delay = Math.random() * (50 - 20) + 20;
-//                   await new Promise(resolve => setTimeout(resolve, delay));
-//               }
-//               controller.close();
-//           }
-//       });
-
-//       return new StreamingTextResponse(stream);
-//   }
-// }
-
-
-const { messages } = await req.json() as chatRequest;
-
-const initialResponse = await openai.createChatCompletion({
-    model: "gpt-3.5-turbo-0613",
-    messages,
-    functions,
-    function_call: "auto",
-});
-
-const initialResponseJson: CreateChatCompletionResponse = await initialResponse.json() as CreateChatCompletionResponse;
-
-if (!initialResponseJson?.choices[0]?.message) {
-    throw new Error("Missing message in response");
-}
-
-const initialResponseMessage: ChatCompletionResponseMessage = initialResponseJson?.choices[0]?.message;
-
-if (initialResponseMessage.function_call) {
-    const { name, arguments: argsString } = initialResponseMessage.function_call;
-
-    if (!name || !argsString) {
+    const { messages } = await req.json() as chatRequest;
+  
+    const initialResponse = await openai.createChatCompletion({
+      model: "gpt-3.5-turbo-0613",
+      messages,
+      functions,
+      function_call: "auto",
+    });
+  
+    const initialResponseJson: CreateChatCompletionResponse = await initialResponse.json();
+  
+    console.log("Initial Response:", initialResponseJson);
+  
+    if (!initialResponseJson?.choices?.[0]?.message) {
+      throw new Error("Missing message in response");
+    }
+  
+    const initialResponseMessage: ChatCompletionResponseMessage = initialResponseJson.choices[0].message;
+  
+    if (initialResponseMessage.function_call) {
+      const { name, arguments: argsString } = initialResponseMessage.function_call;
+  
+      if (!name || !argsString) {
         throw new Error("Function name or arguments are missing");
-    }
-
-    if (!ipAddress) {
+      }
+  
+      if (!ipAddress) {
         throw new Error("Cannot determine IP address");
-    }
-
-    const locationResult = await getGeoLocation(ipAddress);
-
-    if (!locationResult) {
+      }
+  
+      const locationResult = await getGeoLocation(ipAddress);
+  
+      if (!locationResult) {
         throw new Error("Cannot determine location for this IP");
-    }
-
-    const params: location = locationResult;
-
-    if (typeof params.latitude !== 'number' || typeof params.longitude !== 'number') {
+      }
+  
+      const params: location = locationResult;
+  
+      if (typeof params.latitude !== 'number' || typeof params.longitude !== 'number') {
         throw new Error("Invalid latitude or longitude values");
-    }
-
-    const functionResponse = await runChatFunctions(name, params);
-    console.log("Function Response:", functionResponse);
-
-    // Define a function to calculate the approximate token count
-    const calculateTokenCount = (text: string) => {
+      }
+  
+      const functionResponse = await runChatFunctions(name, params);
+      console.log("Function Response:", functionResponse);
+  
+      // Define a function to calculate the approximate token count
+      const calculateTokenCount = (text: string) => {
         return Math.ceil(text.length / 4); // Rough estimate: 1 token ~ 4 characters
-    };
-
-    const maxTokensPerRequest = 4096 - 1000; // Leave room for response and system tokens
-
-    let currentChunk = [];
-    let currentTokenCount = 0;
-    const chunks = [];
-
-    for (const business of functionResponse) {
+      };
+  
+      const maxTokensPerRequest = 4096 - 1000; // Leave room for response and system tokens
+  
+      let currentChunk = [];
+      let currentTokenCount = 0;
+      const chunks = [];
+  
+      for (const business of functionResponse) {
         const businessString = JSON.stringify(business);
         const businessTokenCount = calculateTokenCount(businessString);
-
+  
         if (currentTokenCount + businessTokenCount > maxTokensPerRequest) {
-            chunks.push(currentChunk);
-            currentChunk = [business];
-            currentTokenCount = businessTokenCount;
+          chunks.push(currentChunk);
+          currentChunk = [business];
+          currentTokenCount = businessTokenCount;
         } else {
-            currentChunk.push(business);
-            currentTokenCount += businessTokenCount;
+          currentChunk.push(business);
+          currentTokenCount += businessTokenCount;
         }
-    }
-
-    if (currentChunk.length > 0) {
+      }
+  
+      if (currentChunk.length > 0) {
         chunks.push(currentChunk);
-    }
-
-    const results = [];
-
-    for (const chunk of chunks) {
+      }
+  
+      const results = [];
+  
+      for (const chunk of chunks) {
         const chunkResponse = await openai.createChatCompletion({
-            model: "gpt-3.5-turbo-0613",
-            stream: true,
-            messages: [
-                ...messages,
-                initialResponseMessage,
-                {
-                    role: "function",
-                    name: name,
-                    content: JSON.stringify({ businesses: chunk }),
-                },
-            ],
+          model: "gpt-3.5-turbo-0613",
+          messages: [
+            ...messages,
+            initialResponseMessage,
+            {
+              role: "function",
+              name: name,
+              content: JSON.stringify({ businesses: chunk }),
+            },
+          ],
         });
-
-        const chunkJson = await chunkResponse.json();
-        results.push(chunkJson.choices[0]?.message?.content ?? "");
+  
+        const chunkResponseJson: CreateChatCompletionResponse = await chunkResponse.json();
+  
+        console.log("Chunk Response:", chunkResponseJson);
+  
+        if (!chunkResponseJson?.choices?.[0]?.message) {
+          throw new Error("Missing message in chunk response");
+        }
+  
+        const chunkResponseMessage: ChatCompletionResponseMessage = chunkResponseJson.choices[0].message;
+        results.push(chunkResponseMessage.content);
+      }
+  
+      const encoder = new TextEncoder();
+      const readableStream = new ReadableStream({
+        async start(controller) {
+          for (const result of results) {
+            const chunk = encoder.encode(result);
+            controller.enqueue(chunk);
+            await new Promise((resolve) => setTimeout(resolve, Math.random() * (300 - 30) + 30));
+          }
+          controller.close();
+        },
+      });
+  
+      return new StreamingTextResponse(readableStream);
+    } else {
+        const responseContent = initialResponseJson.choices[0]?.message?.content ?? "";
+        const words = responseContent.split(' ');
+  
+        const stream = new ReadableStream({
+            async start(controller) {
+                for (const word of words) {
+                    controller.enqueue(new TextEncoder().encode(word + ' '));
+                    const delay = Math.random() * (50 - 20) + 20;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+                controller.close();
+            }
+        });
+  
+        return new StreamingTextResponse(stream);
     }
-    const finalResult = results.join("\n");
-
-    const stream = new ReadableStream({
-        async start(controller) {
-            for (const word of finalResult.split(' ')) {
-                controller.enqueue(new TextEncoder().encode(word + ' '));
-                const delay = Math.random() * (50 - 20) + 20;
-                await new Promise(resolve => setTimeout(resolve, delay));
-            }
-            controller.close();
-        }
-    });
-
-    return new StreamingTextResponse(stream);
-
-    // const finalchunk = await openai.createChatCompletion({
-    //     model: "gpt-3.5-turbo-0613",
-    //     stream: true,
-    //     messages: [
-    //         ...messages,
-    //         initialResponseMessage,
-    //         {
-    //             role: "function",
-    //             name: name,
-    //             content: JSON.stringify(results),
-    //         },
-    //     ],
-    // });
-    // console.log("Final Chunk Response:", finalchunk);
-    // console.log("Final Chunk Response Content:", finalchunk);
-
-    // const stream = OpenAIStream(finalchunk);
-        
-    // return new StreamingTextResponse(stream);
-   
-} 
-else {
-    const responseContent = initialResponseJson.choices[0]?.message?.content ?? "";
-    const words = responseContent.split(' ');
-
-    const stream = new ReadableStream({
-        async start(controller) {
-            for (const word of words) {
-                controller.enqueue(new TextEncoder().encode(word + ' '));
-                const delay = Math.random() * (50 - 20) + 20;
-                await new Promise(resolve => setTimeout(resolve, delay));
-            }
-            controller.close();
-        }
-    });
-
-    return new StreamingTextResponse(stream);
-}
-}
+  }
+  
+  
+  
+  
+  
+  ////////////////////////////////////////////////
+ 
+  
+  // import { 
+  //     type ChatCompletionRequestMessage, 
+  //     Configuration, 
+  //     OpenAIApi,
+  //     type CreateChatCompletionResponse, 
+  //     type ChatCompletionResponseMessage
+  //   } from 'openai-edge';
+    
+  //   import { OpenAIStream, StreamingTextResponse } from 'ai';
+  //   import { env } from '@/env.mjs';
+  //   import { functions, runChatFunctions } from '@/app/chat-functions';
+  //   import { type location } from '@/lib/types';
+  //   import { getGeoLocation } from '@/lib/utils';
+  //   import { Ratelimit } from '@upstash/ratelimit';
+  //   import { kv } from '@vercel/kv';
+    
+  //   const openAIConfig = new Configuration({
+  //     apiKey: env.OPENAI_API_KEY,
+  //   });
+    
+  //   const openai = new OpenAIApi(openAIConfig);
+    
+  //   export const runtime = 'edge';
+    
+  //   type chatRequest = {
+  //     messages: ChatCompletionRequestMessage[];
+  //   };
+    
+  //   export async function POST(req: Request) {
+  //     const ipAddress = req.headers.get("x-forwarded-for");
+    
+  //     if (process.env.NODE_ENV !== "development" &&
+  //         process.env.KV_REST_API_URL &&
+  //         process.env.KV_REST_API_TOKEN) {
+    
+  //         const ratelimit = new Ratelimit({
+  //           redis: kv,
+  //           limiter: Ratelimit.slidingWindow(20, "1 d"),
+  //         });
+    
+  //         const { success, limit, reset, remaining } = await ratelimit.limit(
+  //           `askyp_ratelimit_${ipAddress}`,
+  //         );
+    
+  //         if (!success) {
+  //           return new Response("You have reached your request limit for the day.", {
+  //             status: 429,
+  //             headers: {
+  //               "X-RateLimit-Limit": limit.toString(),
+  //               "X-RateLimit-Remaining": remaining.toString(),
+  //               "X-RateLimit-Reset": reset.toString(),
+  //             },
+  //           });
+  //         }
+  //     }
+    
+  //     const { messages } = await req.json() as chatRequest;
+    
+  //     const initialResponse = await openai.createChatCompletion({
+  //         model: "gpt-3.5-turbo-0613",
+  //         messages,
+  //         functions,
+  //         function_call: "auto",
+  //     });
+    
+  //     const initialResponseJson: CreateChatCompletionResponse = await initialResponse.json() as CreateChatCompletionResponse;
+    
+  //     if (!initialResponseJson?.choices[0]?.message) {
+  //         throw new Error("Missing message in response");
+  //     }
+    
+  //     const initialResponseMessage: ChatCompletionResponseMessage = initialResponseJson?.choices[0]?.message;
+    
+  //     if (initialResponseMessage.function_call) {
+  //         const { name, arguments: argsString } = initialResponseMessage.function_call;
+    
+  //         if (!name || !argsString) {
+  //             throw new Error("Function name or arguments are missing");
+  //         }
+    
+  //         if (!ipAddress) {
+  //             throw new Error("Cannot determine IP address");
+  //         }
+    
+  //         const locationResult = await getGeoLocation(ipAddress);
+    
+  //         if (!locationResult) {
+  //             throw new Error("Cannot determine location for this IP");
+  //         }
+    
+  //         const params: location = locationResult;
+    
+  //         if (typeof params.latitude !== 'number' || typeof params.longitude !== 'number') {
+  //             throw new Error("Invalid latitude or longitude values");
+  //         }
+    
+  //         const functionResponse = await runChatFunctions(name, params);
+  //         console.log("Function Response:", functionResponse);
+    
+  //         // Define a function to calculate the approximate token count
+  //         const calculateTokenCount = (text: string) => {
+  //             return Math.ceil(text.length / 4); // Rough estimate: 1 token ~ 4 characters
+  //         };
+    
+  //         const maxTokensPerRequest = 4096 - 1000; // Leave room for response and system tokens
+    
+  //         let currentChunk = [];
+  //         let currentTokenCount = 0;
+  //         const chunks = [];
+    
+  //         for (const business of functionResponse) {
+  //             const businessString = JSON.stringify(business);
+  //             const businessTokenCount = calculateTokenCount(businessString);
+    
+  //             if (currentTokenCount + businessTokenCount > maxTokensPerRequest) {
+  //                 chunks.push(currentChunk);
+  //                 currentChunk = [business];
+  //                 currentTokenCount = businessTokenCount;
+  //             } else {
+  //                 currentChunk.push(business);
+  //                 currentTokenCount += businessTokenCount;
+  //             }
+  //         }
+    
+  //         if (currentChunk.length > 0) {
+  //             chunks.push(currentChunk);
+  //         }
+    
+  //         const results = [];
+    
+  //         // for (const chunk of chunks) {
+  //         //     const chunkResponse = await openai.createChatCompletion({
+  //         //         model: "gpt-3.5-turbo-0613",
+  //         //         stream: true,
+  //         //         messages: [
+  //         //             ...messages,
+  //         //             initialResponseMessage,
+  //         //             {
+  //         //                 role: "function",
+  //         //                 name: name,
+  //         //                 content: JSON.stringify({ businesses: chunk }),
+  //         //             },
+  //         //         ],
+  //         //     });
+    
+  //         //     const chunkJson = await chunkResponse.json();
+  //         //     results.push(chunkJson.choices[0]?.message?.content ?? "");
+  //         // }
+  //         const finalResult = results.join("\n");
+    
+  //         const stream = new ReadableStream({
+  //             async start(controller) {
+  //                 for (const word of finalResult.split(' ')) {
+  //                     controller.enqueue(new TextEncoder().encode(word + ' '));
+  //                     const delay = Math.random() * (50 - 20) + 20;
+  //                     await new Promise(resolve => setTimeout(resolve, delay));
+  //                 }
+  //                 controller.close();
+  //             }
+  //         });
+    
+  //         return new StreamingTextResponse(stream);
+         
+  //     } else {
+  //         const responseContent = initialResponseJson.choices[0]?.message?.content ?? "";
+  //         const words = responseContent.split(' ');
+    
+  //         const stream = new ReadableStream({
+  //             async start(controller) {
+  //                 for (const word of words) {
+  //                     controller.enqueue(new TextEncoder().encode(word + ' '));
+  //                     const delay = Math.random() * (50 - 20) + 20;
+  //                     await new Promise(resolve => setTimeout(resolve, delay));
+  //                 }
+  //                 controller.close();
+  //             }
+  //         });
+    
+  //         return new StreamingTextResponse(stream);
+  //     }
+  //   }
